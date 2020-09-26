@@ -78,7 +78,7 @@ def codeml(orf_no) :
     cfile = open("codeml.ctl", 'w')
     cfile.write("seqfile = orf_"+str(orf_no)+"_aligned_rmstop.phy"+"\n")
     cfile.write("outfile = orf_"+str(orf_no)+"_dnds_output"+"\n")
-    cfile.write("treefile = outfile"+"\n")
+    cfile.write("treefile = outtree"+"\n")
     cfile.write("noisy = 9\n")
     cfile.write("verbose = 0\n")
     cfile.write("seqtype = 1\n")
