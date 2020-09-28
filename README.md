@@ -6,7 +6,7 @@ Make sure to do the following on Stampede2
 
 Usage :
 
-`python .main.py -s gisaid_aligned.fa`
+`python main.py -s gisaid_aligned.fa`
 
 Step 1. Clustalo alignment (deprecated)
 Step 2. Identify ORF boundaries
