@@ -59,6 +59,7 @@ def space_out(orf_no) :
     os.chdir("..")
 
 def dnapars(orf_no) :
+    print orf_no
     os.chdir("orf_"+str(orf_no))
     os.system("rm -Rf outfile outtree")
     outfile = open("bash.sh", 'w') 
@@ -81,12 +82,32 @@ def codeml(orf_no) :
     cfile.write("treefile = outtree"+"\n")
     cfile.write("noisy = 9\n")
     cfile.write("verbose = 0\n")
+    cfile.write("runmode = 0\n\n")
     cfile.write("seqtype = 1\n")
-    cfile.write("runmode = 0\nCodonFreq = 3\naaDist = 0\naaRatefile = wag.dat\nmodel = 2\nNSsites = 0\nicode = 0\nMgene = 0\nfix_kappa = 0\n")
-    cfile.write("kappa = 2\nfix_omega = 0\nomega = .4\nfix_alpha = 1\nalpha = 0.\nMalpha = 0\nncatG = 3\nfix_rho = 1\nrho = 0.\n")
-    cfile.write("clock = 0\ngetSE = 0\nRateAncestor = 0\nSmall_Diff = .5e-6\n")
+    cfile.write("CodonFreq = 3\n\n")
+    cfile.write("aaDist = 0\n")
+    cfile.write("aaRatefile = wag.dat\n\n")
+    cfile.write("model = 0\n\n")
+    cfile.write("NSsites = 0\n\n")
+    cfile.write("icode = 0\n")
+    cfile.write("Mgene = 0\n\n")
+    cfile.write("fix_kappa = 0\n")
+    cfile.write("kappa = 2\n")
+    cfile.write("fix_omega = 0\n")
+    cfile.write("omega = .4\n")
+    cfile.write("fix_alpha = 1\n")
+    cfile.write("alpha = 0.\n")
+    cfile.write("Malpha = 0\n")
+    cfile.write("ncatG = 3\n")
+    cfile.write("fix_rho = 1\n")
+    cfile.write("rho = 0.\n")
+    cfile.write("clock = 0\n")
+    cfile.write("getSE = 0\n")
+    cfile.write("RateAncestor = 0\n")
+    cfile.write("Small_Diff = .5e-6\n")
     cfile.close()
-    os.system("singularity run -B $PWD:/data docker://biocontainers/paml:v4.9hdfsg-1-deb_cv1 codeml")
+    os.system("/work/02114/wonaya/stampede2/software/paml4.9j/bin/codeml")
+    #os.system("singularity run -B $PWD:/data docker://biocontainers/paml:v4.9hdfsg-1-deb_cv1 codeml")
 #    os.system("rm -Rf codeml.ctl")
     os.chdir("..")
 
@@ -100,7 +121,7 @@ def main():
     print "Step 1. Clustalo"
     #os.system("singularity run -B $PWD:/data docker://biocontainers/clustal-omega:v1.2.1_cv5 clustalo -i "+gisaid+" -o "+gisaid_out+" --outfmt=fa --threads=272 -v")
     print datetime.now()
-
+    
     print "Step 2. Identify ORF boundaries"
     import MSA_ORF_Boundaries
     MSA_ORF_Boundaries.main(args.seq)
@@ -113,9 +134,11 @@ def main():
     print datetime.now()
     
     print "Step 4. Shorten sequence name"
+    
     import multiprocessing
     import Shorten_Sequence_name
     from glob import glob
+    
     jobs = []
     for dirs in glob("orf*/") :
         s = multiprocessing.Process(target=Shorten_Sequence_name.main, args=(dirs+"/"+dirs.strip("/"), ))
@@ -164,7 +187,7 @@ def main():
     [x.join() for x in jobs]
     
     print datetime.now()
-
+    
     print "Step 8. DNApars"
     jobs = []
     for dirs in glob("orf*/") :
