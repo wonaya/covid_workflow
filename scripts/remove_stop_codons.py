@@ -30,7 +30,7 @@ def string_to_pieces(s1, l_size):
     return(in_pieces)
 
 def main(orf_no) :
-    os.chdir("orf_"+str(orf_no))
+    os.chdir("Outfiles/orf_"+str(orf_no))
     input_filename = "orf_"+str(orf_no)+"_aligned.phy"
     Start = ['ATG', 'atg']
     Stop = ['TAA','taa', 'TAG', 'tag', 'TGA', 'tga']
@@ -87,7 +87,7 @@ def main(orf_no) :
 
     new_al_file.close()
     al_file.close()
-    os.chdir("..")
+    os.chdir("../..")
 
 if __name__ == "__main__":
 	main()
