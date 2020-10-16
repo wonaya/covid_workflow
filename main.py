@@ -72,7 +72,7 @@ def dnapars(orf_no) :
     outfile.write("Y\n")
     outfile.write("EOF\n")
     outfile.close()
-    os.system("bash bash.sh >> log.txt")
+    os.system("bash bash.sh > log.txt")
     print "orf_"+str(orf_no), "DONE"
     os.system("rm -Rf bash.sh")
     os.chdir("../..")
@@ -110,7 +110,7 @@ def codeml(orf_no) :
     cfile.write("RateAncestor = 0\n")
     cfile.write("Small_Diff = .5e-6\n")
     cfile.close()
-    os.system("/work/02114/wonaya/stampede2/software/paml4.9j/bin/codeml >> tmp.txt")
+    os.system("/work/02114/wonaya/stampede2/software/paml4.9j/bin/codeml > tmp.txt")
     #os.system("singularity run -B $PWD:/data docker://biocontainers/paml:v4.9hdfsg-1-deb_cv1 codeml")
 #    os.system("rm -Rf codeml.ctl")
     os.chdir("..")
