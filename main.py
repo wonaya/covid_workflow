@@ -72,7 +72,7 @@ def dnapars(orf_no) :
     outfile.write("Y\n")
     outfile.write("EOF\n")
     outfile.close()
-    os.system("bash bash.sh >> log.txt")
+    os.system("bash bash.sh > log.txt")
     print "orf_"+str(orf_no), "DONE"
     os.system("rm -Rf bash.sh")
     os.chdir("../..")
@@ -110,7 +110,7 @@ def codeml(orf_no) :
     cfile.write("RateAncestor = 0\n")
     cfile.write("Small_Diff = .5e-6\n")
     cfile.close()
-    os.system("/work/02114/wonaya/stampede2/software/paml4.9j/bin/codeml >> tmp.txt")
+    os.system("/work/02114/wonaya/stampede2/software/paml4.9j/bin/codeml > tmp.txt")
     #os.system("singularity run -B $PWD:/data docker://biocontainers/paml:v4.9hdfsg-1-deb_cv1 codeml")
 #    os.system("rm -Rf codeml.ctl")
     os.chdir("..")
@@ -125,10 +125,11 @@ def main():
     print "Step 1. Clustalo"
     #os.system("singularity run -B $PWD:/data docker://biocontainers/clustal-omega:v1.2.1_cv5 clustalo -i "+gisaid+" -o "+gisaid_out+" --outfmt=fa --threads=272 -v")
     print datetime.now()
-      
+    
     print "Step 2. Identify ORF boundaries"
-    import MSA_ORF_Boundaries
-    MSA_ORF_Boundaries.main(args.seq)
+    import MSA_ORF_Boundaries_mpi
+    #MSA_ORF_Boundaries.main(args.seq)
+    MSA_ORF_Boundaries_mpi.main(args.seq)
     print datetime.now()
     
     print "Step 3. Separate out ORFs"
@@ -136,6 +137,7 @@ def main():
     os.chdir("Outfiles")
     Create_ORF_Files_NoStop.main()
     print datetime.now()
+    os.chdir("..")
     
     print "Step 4. Shorten sequence name"
     import Shorten_Sequence_name
