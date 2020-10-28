@@ -91,7 +91,7 @@ def codeml(orf_no) :
     cfile.write("aaDist = 0\n")
     cfile.write("aaRatefile = wag.dat\n\n")
     #cfile.write("model = 0\n\n")
-    cfile.write("model = 1\n\n")
+    cfile.write("model = 0\n\n")
     cfile.write("NSsites = 0\n\n")
     cfile.write("icode = 0\n")
     cfile.write("Mgene = 0\n\n")
@@ -118,97 +118,117 @@ def codeml(orf_no) :
 def main():
     parser = argparse.ArgumentParser(description="Run through pipeline",formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("-s", "--seq", metavar='FASTA',help="Aligned fasta", required=True)
+    parser.add_argument("-p", "--process", help="process to run, default to run all", required=False)
     args = parser.parse_args()
 
     sys.path.append("/scratch/02114/wonaya/COVID-19_genomes/pipeline/scripts")
-    os.system("rm -Rf Outfiles")
-    print "Step 1. Clustalo"
-    #os.system("singularity run -B $PWD:/data docker://biocontainers/clustal-omega:v1.2.1_cv5 clustalo -i "+gisaid+" -o "+gisaid_out+" --outfmt=fa --threads=272 -v")
-    print datetime.now()
-    
-    print "Step 2. Identify ORF boundaries"
-    import MSA_ORF_Boundaries_mpi
-    #MSA_ORF_Boundaries.main(args.seq)
-    MSA_ORF_Boundaries_mpi.main(args.seq)
-    print datetime.now()
-    
-    print "Step 3. Separate out ORFs"
-    import Create_ORF_Files_NoStop
-    os.chdir("Outfiles")
-    Create_ORF_Files_NoStop.main()
-    print datetime.now()
-    os.chdir("..")
-    
-    print "Step 4. Shorten sequence name"
-    import Shorten_Sequence_name
-    jobs = []
-    for dirs in glob("Outfiles/orf*/") :
-        no = dirs.strip("Outfiles/orf_")
-        s = multiprocessing.Process(target=Shorten_Sequence_name.main, args=("Outfiles/orf_"+no+"/orf_"+no, ))
-        jobs.append(s)
-        s.start()
-    [x.join() for x in jobs]      
-    print datetime.now()
-    
-    print "Step 5. Align individual ORF sequences to MSA format"
-    jobs = []
-    for dirs in glob("Outfiles/orf*/") :
-        no = dirs.strip("Outfiles/orf_")
-        s = multiprocessing.Process(target=clustalo, args=(no, ))        
-        jobs.append(s)
-        s.start()
-    [x.join() for x in jobs]
 
-    print datetime.now()
+    process = []
+    if args.process == None :
+        process = range(1,10)
+    else :
+        if "-" in args.process : 
+            process = range(int(args.process.split("-")[0]), int(args.process.split("-")[1])+1)
+        if "," in args.process :
+            for x in args.process.split(",") :
+                process.append(int(x))
     
-    print "Step 6. Remove stop codon from ORF MSA"
-    import remove_stop_codons
-    jobs = []
-    for dirs in glob("Outfiles/orf*/") :
-        print dirs
-        s = multiprocessing.Process(target=remove_stop_codons.main, args=(dirs.strip("Outfiles/orf_/"), ))
-        jobs.append(s)
-        s.start()
-    [x.join() for x in jobs]
-    print datetime.now()
+    #os.system("rm -Rf Outfiles")
+    if 1 in process :
+        print "Step 1. Clustalo"
+        #os.system("singularity run -B $PWD:/data docker://biocontainers/clustal-omega:v1.2.1_cv5 clustalo -i "+gisaid+" -o "+gisaid_out+" --outfmt=fa --threads=272 -v")
+        print datetime.now()
+   
+    if 2 in process :
+        print "Step 2. Identify ORF boundaries"
+        import MSA_ORF_Boundaries_mpi
+        #MSA_ORF_Boundaries.main(args.seq)
+        MSA_ORF_Boundaries_mpi.main(args.seq)
+        print datetime.now()
     
-    print "Step 7. Reformat Phylip"
-    jobs = []
-    for dirs in glob("Outfiles/orf*/") :
-        print dirs
-        s = multiprocessing.Process(target=formatR, args=(dirs.strip("Outfiles/orf_/"), ))
-        jobs.append(s)
-        s.start()
-    [x.join() for x in jobs]
+    if 3 in process :
+        print "Step 3. Separate out ORFs"
+        import Create_ORF_Files_NoStop
+        os.chdir("Outfiles")
+        Create_ORF_Files_NoStop.main()
+        print datetime.now()
+        os.chdir("..")
     
-    jobs = []
-    for dirs in glob("Outfiles/orf*/") :
-        print dirs
-        s = multiprocessing.Process(target=space_out, args=(dirs.strip("Outfiles/orf_/"), ))
-        jobs.append(s)
-        s.start()
-    [x.join() for x in jobs]
+    if 4 in process :
+        print "Step 4. Shorten sequence name"
+        import Shorten_Sequence_name
+        jobs = []
+        for dirs in glob("Outfiles/orf*/") :
+            no = dirs.strip("Outfiles/orf_")
+            s = multiprocessing.Process(target=Shorten_Sequence_name.main, args=("Outfiles/orf_"+no+"/orf_"+no, ))
+            jobs.append(s)
+            s.start()
+        [x.join() for x in jobs]      
+        print datetime.now()
     
-    print datetime.now()
+    if 5 in process :
+        print "Step 5. Align individual ORF sequences to MSA format"
+        jobs = []
+        for dirs in glob("Outfiles/orf*/") :
+            no = dirs.strip("Outfiles/orf_")
+            s = multiprocessing.Process(target=clustalo, args=(no, ))        
+            jobs.append(s)
+            s.start()
+        [x.join() for x in jobs]
+        print datetime.now()
     
-    print "Step 8. DNApars"
-    jobs = []
-    for dirs in glob("Outfiles/orf*/") :
-        print dirs
-        s = multiprocessing.Process(target=dnapars, args=(dirs.strip("Outfiles/orf_/"), ))
-        jobs.append(s)
-        s.start()
-    [x.join() for x in jobs]
-    """
-    print "Step 9. CODEML"
-    jobs = []
-    for dirs in glob("Outfiles/orf*/") :
-        print dirs
-        s = multiprocessing.Process(target=codeml, args=(dirs.strip("Outfiles/orf_/"), ))
-        jobs.append(s)
-        s.start()
-    [x.join() for x in jobs]
-    print datetime.now()
-    """
+    if 6 in process :    
+        print "Step 6. Remove stop codon from ORF MSA"
+        import remove_stop_codons
+        jobs = []
+        for dirs in glob("Outfiles/orf*/") :
+            print dirs
+            s = multiprocessing.Process(target=remove_stop_codons.main, args=(dirs.strip("Outfiles/orf_/"), ))
+            jobs.append(s)
+            s.start()
+        [x.join() for x in jobs]
+        print datetime.now()
+    
+    if 7 in process :
+        print "Step 7. Reformat Phylip"
+        jobs = []
+        for dirs in glob("Outfiles/orf*/") :
+            print dirs
+            s = multiprocessing.Process(target=formatR, args=(dirs.strip("Outfiles/orf_/"), ))
+            jobs.append(s)
+            s.start()
+        [x.join() for x in jobs]
+    
+        jobs = []
+        for dirs in glob("Outfiles/orf*/") :
+            print dirs
+            s = multiprocessing.Process(target=space_out, args=(dirs.strip("Outfiles/orf_/"), ))
+            jobs.append(s)
+            s.start()
+        [x.join() for x in jobs]
+    
+        print datetime.now()
+    
+    if 8 in process :
+        print "Step 8. DNApars"
+        jobs = []
+        for dirs in glob("Outfiles/orf*/") :
+            print dirs
+            s = multiprocessing.Process(target=dnapars, args=(dirs.strip("Outfiles/orf_/"), ))
+            jobs.append(s)
+            s.start()
+        [x.join() for x in jobs]
+    
+    if 9 in process :
+        print "Step 9. CODEML"
+        jobs = []
+        for dirs in glob("Outfiles/orf*/") :
+            print dirs
+            s = multiprocessing.Process(target=codeml, args=(dirs.strip("Outfiles/orf_/"), ))
+            jobs.append(s)
+            s.start()
+        [x.join() for x in jobs]
+        print datetime.now()
+    
 if __name__ == "__main__":
     main()

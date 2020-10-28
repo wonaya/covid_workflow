@@ -2,11 +2,11 @@
 
 Make sure to do the following on Stampede2
 
-`module load tacc-singularity biocontainers clustalo Rstats phylip paml`
+`module load tacc-singularity Rstats`
 
 Usage :
 
-`python main.py -s gisaid_aligned.fa`
+`python main.py -s gisaid_aligned.fa -p 1-9`
 
 Step 1. Clustalo alignment (deprecated)
 
