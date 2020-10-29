@@ -110,6 +110,8 @@ def codeml(orf_no) :
     cfile.write("RateAncestor = 0\n")
     cfile.write("Small_Diff = .5e-6\n")
     cfile.close()
+    print os.getcwd() 
+    os.system("rm -Rf tmp.txt")
     os.system("/work/02114/wonaya/stampede2/software/paml4.9j/bin/codeml > tmp.txt")
     #os.system("singularity run -B $PWD:/data docker://biocontainers/paml:v4.9hdfsg-1-deb_cv1 codeml")
 #    os.system("rm -Rf codeml.ctl")
@@ -132,7 +134,8 @@ def main():
         if "," in args.process :
             for x in args.process.split(",") :
                 process.append(int(x))
-    
+        elif len(args.process) == 1 :
+            process.append(int(args.process))
     #os.system("rm -Rf Outfiles")
     if 1 in process :
         print "Step 1. Clustalo"
@@ -140,6 +143,7 @@ def main():
         print datetime.now()
    
     if 2 in process :
+        print datetime.now()
         print "Step 2. Identify ORF boundaries"
         import MSA_ORF_Boundaries_mpi
         #MSA_ORF_Boundaries.main(args.seq)
@@ -147,6 +151,7 @@ def main():
         print datetime.now()
     
     if 3 in process :
+        print datetime.now()
         print "Step 3. Separate out ORFs"
         import Create_ORF_Files_NoStop
         os.chdir("Outfiles")
@@ -155,6 +160,7 @@ def main():
         os.chdir("..")
     
     if 4 in process :
+        print datetime.now()
         print "Step 4. Shorten sequence name"
         import Shorten_Sequence_name
         jobs = []
@@ -167,6 +173,7 @@ def main():
         print datetime.now()
     
     if 5 in process :
+        print datetime.now()
         print "Step 5. Align individual ORF sequences to MSA format"
         jobs = []
         for dirs in glob("Outfiles/orf*/") :
@@ -178,6 +185,7 @@ def main():
         print datetime.now()
     
     if 6 in process :    
+        print datetime.now()
         print "Step 6. Remove stop codon from ORF MSA"
         import remove_stop_codons
         jobs = []
@@ -190,6 +198,7 @@ def main():
         print datetime.now()
     
     if 7 in process :
+        print datetime.now()
         print "Step 7. Reformat Phylip"
         jobs = []
         for dirs in glob("Outfiles/orf*/") :
@@ -210,6 +219,7 @@ def main():
         print datetime.now()
     
     if 8 in process :
+        print datetime.now()
         print "Step 8. DNApars"
         jobs = []
         for dirs in glob("Outfiles/orf*/") :
@@ -218,12 +228,13 @@ def main():
             jobs.append(s)
             s.start()
         [x.join() for x in jobs]
+        print datetime.now()
     
     if 9 in process :
+        print datetime.now()
         print "Step 9. CODEML"
         jobs = []
         for dirs in glob("Outfiles/orf*/") :
-            print dirs
             s = multiprocessing.Process(target=codeml, args=(dirs.strip("Outfiles/orf_/"), ))
             jobs.append(s)
             s.start()
