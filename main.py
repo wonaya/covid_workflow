@@ -77,7 +77,7 @@ def dnapars(orf_no) :
     os.system("rm -Rf bash.sh")
     os.chdir("../..")
 
-def codeml(orf_no) :
+def codeml(orf_no, model) :
     os.chdir("Outfiles/orf_"+str(orf_no))
     cfile = open("codeml.ctl", 'w')
     cfile.write("seqfile = orf_"+str(orf_no)+"_aligned_rmstop.phy"+"\n")
@@ -91,7 +91,7 @@ def codeml(orf_no) :
     cfile.write("aaDist = 0\n")
     cfile.write("aaRatefile = wag.dat\n\n")
     #cfile.write("model = 0\n\n")
-    cfile.write("model = 0\n\n")
+    cfile.write("model = "+str(model)+"\n\n")
     cfile.write("NSsites = 0\n\n")
     cfile.write("icode = 0\n")
     cfile.write("Mgene = 0\n\n")
@@ -112,7 +112,7 @@ def codeml(orf_no) :
     cfile.close()
     print os.getcwd() 
     os.system("rm -Rf tmp.txt")
-    os.system("/work/02114/wonaya/stampede2/software/paml4.9j/bin/codeml > tmp.txt")
+    os.system("/work/02114/wonaya/stampede2/software/paml4.9j/src/codeml > tmp.txt")
     #os.system("singularity run -B $PWD:/data docker://biocontainers/paml:v4.9hdfsg-1-deb_cv1 codeml")
 #    os.system("rm -Rf codeml.ctl")
     os.chdir("..")
@@ -120,7 +120,8 @@ def codeml(orf_no) :
 def main():
     parser = argparse.ArgumentParser(description="Run through pipeline",formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("-s", "--seq", metavar='FASTA',help="Aligned fasta", required=True)
-    parser.add_argument("-p", "--process", help="process to run, default to run all", required=False)
+    parser.add_argument("-p", "--process", help="process to run, default to run all", default="1-9", required=False)
+    parser.add_argument("-m", "--model", help="PAML model for codeml, default:0", default=0, required=False)
     args = parser.parse_args()
 
     sys.path.append("/scratch/02114/wonaya/COVID-19_genomes/pipeline/scripts")
@@ -235,7 +236,7 @@ def main():
         print "Step 9. CODEML"
         jobs = []
         for dirs in glob("Outfiles/orf*/") :
-            s = multiprocessing.Process(target=codeml, args=(dirs.strip("Outfiles/orf_/"), ))
+            s = multiprocessing.Process(target=codeml, args=(dirs.strip("Outfiles/orf_/"), args.model, ))
             jobs.append(s)
             s.start()
         [x.join() for x in jobs]

@@ -8,6 +8,15 @@ Usage :
 
 `python main.py -s gisaid_aligned.fa -p 1-9`
 
+## Arguments 
+
+`-s` : Aligned sequence in Fasta format 
+
+`-p` : Processes to run, can use `,` or `-`, for example 1-9 runs all, 8,9 runs DNApars and CODEML
+
+`-m` : Model to use in Codeml run, default is 0. Can be 0, 1 or 2
+
+## Processes 
 Step 1. Clustalo alignment (deprecated)
 
 Step 2. Identify ORF boundaries
