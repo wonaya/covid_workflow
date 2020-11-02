@@ -6,7 +6,7 @@ Make sure to do the following on Stampede2
 
 Usage :
 
-`python main.py -s gisaid_aligned.fa -p 1-9`
+`python main.py -s gisaid_aligned.fa -p 1-9 -m 1`
 
 ## Arguments 
 
